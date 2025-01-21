@@ -2,6 +2,7 @@ package main
 
 import (
 	"Lessons/internal/links"
+	"Lessons/internal/user"
 	"fmt"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	// Загружаем переменные окружения из указанного .env файла.
-	err := godotenv.Load("C:\\Users\\dania\\GolandProjects\\Lessons\\.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		// Если файл не найден или произошла другая ошибка, завершить программу.
 		panic(err)
@@ -33,10 +34,10 @@ func main() {
 	fmt.Println("Миграция выполнена успешно!")
 
 	// Удаляем таблицу Link, если она существует.
-	db.Migrator().DropTable(&links.Link{})
+	db.Migrator().DropTable(&links.Link{}, &user.User{})
 
 	// Автоматически создаем таблицу Link на основе структуры.
-	err = db.AutoMigrate(&links.Link{})
+	err = db.AutoMigrate(&links.Link{}, &user.User{})
 	if err != nil {
 		// Если миграция не удалась, завершаем выполнение функции.
 		return

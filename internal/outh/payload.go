@@ -16,8 +16,9 @@ type LoginResponse struct {
 // RegisterRequest представляет структуру для запроса на регистрацию.
 // Содержит имя пользователя и данные для входа.
 type RegisterRequest struct {
-	UserName string       `json:"username" validate:"required"` // Поле username обязательно для заполнения.
-	Login    LoginRequest `json:"login" validate:"required"`    // Вложенная структура LoginRequest для логина.
+	Name     string `json:"name"`                      // Поле username обязательно для заполнения.
+	Email    string `json:"email" validate:"required"` // Вложенная структура LoginRequest для логина.
+	Password string `json:"password" validate:"required"`
 }
 
 // RegisterResponse представляет структуру ответа на запрос регистрации.

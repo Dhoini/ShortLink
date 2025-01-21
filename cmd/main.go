@@ -4,7 +4,9 @@ import (
 	"Lessons/configs"
 	"Lessons/internal/links"
 	"Lessons/internal/outh"
+	"Lessons/internal/user"
 	"Lessons/pkg/db"
+	"Lessons/pkg/middleware"
 	"fmt"
 	"net/http"
 )
@@ -21,21 +23,31 @@ func main() {
 
 	// Инициализация репозиториев.
 	LinkRepository := links.NewLinkRepository(dB)
+	UserRepository := user.NewUserRepository(dB)
+
+	//Services
+	AuthService := auth.NewUserService(UserRepository)
 
 	// Инициализация обработчиков для маршрутов аутентификации.
 	auth.NewAouthHendler(router, auth.AouthHendlerDeps{
-		Config: conf, // Передаем конфигурацию в зависимости обработчика
+		Config:      conf, // Передаем конфигурацию в зависимости обработчика
+		AuthService: AuthService,
 	})
 
 	// Инициализация обработчиков для работы с сущностями Link.
 	links.NewLinkHendler(router, links.LinkHendlerDeps{
 		LinkRepository: LinkRepository, // Передаем репозиторий ссылок в зависимости обработчика.
 	})
-
+	//middlwares
+	stackMiddlwares := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+		middleware.IsAuthenticated,
+	)
 	// Настраиваем сервер.
 	server := http.Server{
-		Addr:    ":8080", // Порт, на котором будет запущен сервер.
-		Handler: router,  // Указываем маршрутизатор как обработчик.
+		Addr:    ":8080",                 // Порт, на котором будет запущен сервер.
+		Handler: stackMiddlwares(router), // Указываем маршрутизатор как обработчик.
 	}
 
 	// Выводим сообщение о запуске сервера.

@@ -1,6 +1,7 @@
 package links
 
 import (
+	"Lessons/pkg/middleware"
 	"Lessons/pkg/reg"
 	"Lessons/pkg/res"
 	"gorm.io/gorm"
@@ -26,10 +27,10 @@ func NewLinkHendler(router *http.ServeMux, deps LinkHendlerDeps) {
 		LinkRepository: deps.LinkRepository,
 	}
 	// Регистрация маршрутов.
-	router.HandleFunc("POST /link", handler.Create())        // Создание новой ссылки.
-	router.HandleFunc("PATCH /link/{id}", handler.Update())  // Обновление существующей ссылки.
-	router.HandleFunc("DELETE /link/{id}", handler.Delete()) // Удаление ссылки.
-	router.HandleFunc("GET /link/{hash}", handler.GoTo())    // Переход по сокращенной ссылке.
+	router.HandleFunc("POST /link", handler.Create())                               // Создание новой ссылки.
+	router.Handle("PATCH /link/{id}", middleware.IsAuthenticated(handler.Update())) // Обновление существующей ссылки.
+	router.HandleFunc("DELETE /link/{id}", handler.Delete())                        // Удаление ссылки.
+	router.HandleFunc("GET /link/{hash}", handler.GoTo())                           // Переход по сокращенной ссылке.
 }
 
 // Create обрабатывает создание новой ссылки.

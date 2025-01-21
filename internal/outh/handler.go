@@ -12,11 +12,13 @@ import (
 // Содержит конфигурацию приложения.
 type AouthHendlerDeps struct {
 	*configs.Config
+	*AuthService
 }
 
 // AouthHendler реализует методы для обработки запросов авторизации.
 type AouthHendler struct {
 	*configs.Config
+	*AuthService
 }
 
 // NewAouthHendler регистрирует маршруты для авторизации.
@@ -24,7 +26,8 @@ type AouthHendler struct {
 // deps: зависимости для инициализации обработчика.
 func NewAouthHendler(router *http.ServeMux, deps AouthHendlerDeps) {
 	handler := &AouthHendler{
-		Config: deps.Config,
+		Config:      deps.Config,
+		AuthService: deps.AuthService,
 	}
 	// Регистрируем маршруты для входа и регистрации.
 	router.HandleFunc("POST /auth/login", handler.Login())
@@ -60,8 +63,6 @@ func (handler *AouthHendler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		// Отладочная информация.
-		fmt.Println(body)
-		fmt.Println("LoginRegister")
+		handler.AuthService.Register(body.Email, body.Password, body.Name)
 	}
 }
