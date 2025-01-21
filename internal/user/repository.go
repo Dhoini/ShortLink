@@ -1,6 +1,9 @@
 package user
 
-import "Lessons/pkg/db"
+import (
+	"Lessons/pkg/db"
+	"fmt"
+)
 
 //create findByemail
 
@@ -25,6 +28,8 @@ func (repo *UserRepository) Create(user *User) (*User, error) {
 	if result.Error != nil {
 		return nil, result.Error // Возвращает ошибку, если операция завершилась неудачно.
 	}
+	fmt.Printf("User before saving: %+v\n", user)
+
 	return user, nil // Возвращает сохраненный объект User при успешной операции.
 }
 

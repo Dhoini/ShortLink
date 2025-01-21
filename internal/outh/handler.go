@@ -2,9 +2,9 @@ package auth
 
 import (
 	"Lessons/configs"
+	"Lessons/pkg/JWT"
 	"Lessons/pkg/reg"
 	"Lessons/pkg/res"
-	"fmt"
 	"net/http"
 )
 
@@ -42,14 +42,20 @@ func (handler *AouthHendler) Login() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		// Отладочная информация.
-		fmt.Println(body)
-		fmt.Println(handler.Config.Auth.Secret)
-		fmt.Println("Login")
 
+		email, err := handler.AuthService.Login(body.Email, body.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		token, err := JWT.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		// Ответ на успешный вход с фиктивным токеном.
 		data := LoginResponse{
-			Token: "1234",
+			Token: token,
 		}
 		res.Json(w, data, http.StatusOK)
 	}
@@ -63,6 +69,20 @@ func (handler *AouthHendler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		handler.AuthService.Register(body.Email, body.Password, body.Name)
+		email, err := handler.AuthService.Register(body.Email, body.Password, body.Name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		token, err := JWT.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Ответ на успешный вход с фиктивным токеном.
+		data := RegisterResponse{
+			Token: token,
+		}
+		res.Json(w, data, http.StatusOK)
 	}
 }

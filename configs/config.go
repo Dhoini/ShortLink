@@ -37,7 +37,7 @@ func LoadConfig() *Config {
 			Dsn: os.Getenv("DSN"), // Читаем строку подключения к базе данных.
 		},
 		Auth: AuthConfig{
-			Secret: os.Getenv("TOKEN"), // Читаем секретный ключ для аутентификации.
+			Secret: os.Getenv("SECRET"), // Читаем секретный ключ для аутентификации.
 		},
 	}
 }
