@@ -1,6 +1,7 @@
 package links
 
 import (
+	"Lessons/internal/stats"
 	"gorm.io/gorm"
 	"math/rand"
 )
@@ -9,9 +10,10 @@ import (
 // Url: оригинальная ссылка.
 // Hash: сокращенная ссылка.
 type Link struct {
-	gorm.Model        // Встроенная структура GORM, содержащая поля ID, CreatedAt, UpdatedAt и DeletedAt.
-	Url        string `json:"url" gorm:"type:varchar(255);not null"` // Оригинальная ссылка, обязательное поле.
-	Hash       string `json:"hash" gorm:"uniqueIndex"`               // Уникальный хэш для сокращенной ссылки.
+	gorm.Model               // Встроенная структура GORM, содержащая поля ID, CreatedAt, UpdatedAt и DeletedAt.
+	Url        string        `json:"url" gorm:"type:varchar(255);not null"` // Оригинальная ссылка, обязательное поле.
+	Hash       string        `json:"hash" gorm:"uniqueIndex"`               // Уникальный хэш для сокращенной ссылки.
+	Stats      []stats.Stats `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 // NewLink создает новую сущность Link с указанным URL и случайным хэшем.

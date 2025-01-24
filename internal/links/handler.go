@@ -1,9 +1,12 @@
 package links
 
 import (
+	"Lessons/configs"
+	"Lessons/pkg/event"
 	"Lessons/pkg/middleware"
 	"Lessons/pkg/reg"
 	"Lessons/pkg/res"
+	"fmt"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -11,12 +14,15 @@ import (
 
 // LinkHendlerDeps определяет зависимости для LinkHendler.
 type LinkHendlerDeps struct {
-	LinkRepository *LinkRepository // Репозиторий для работы с сущностями Link.
+	LinkRepository *LinkRepository
+	EventBus       *event.EventBus
+	Config         *configs.Config // Репозиторий для работы с сущностями Link.
 }
 
 // LinkHendler отвечает за обработку HTTP-запросов, связанных с Link.
 type LinkHendler struct {
 	LinkRepository *LinkRepository // Репозиторий для доступа к данным Link.
+	EventBus       *event.EventBus
 }
 
 // NewLinkHendler создает новый LinkHendler и регистрирует маршруты.
@@ -25,12 +31,14 @@ type LinkHendler struct {
 func NewLinkHendler(router *http.ServeMux, deps LinkHendlerDeps) {
 	handler := &LinkHendler{
 		LinkRepository: deps.LinkRepository,
+		EventBus:       deps.EventBus,
 	}
 	// Регистрация маршрутов.
-	router.HandleFunc("POST /link", handler.Create())                               // Создание новой ссылки.
-	router.Handle("PATCH /link/{id}", middleware.IsAuthenticated(handler.Update())) // Обновление существующей ссылки.
-	router.HandleFunc("DELETE /link/{id}", handler.Delete())                        // Удаление ссылки.
-	router.HandleFunc("GET /link/{hash}", handler.GoTo())                           // Переход по сокращенной ссылке.
+	router.HandleFunc("POST /link", handler.Create())                                            // Создание новой ссылки.
+	router.Handle("PATCH /link/{id}", middleware.IsAuthenticated(handler.Update(), deps.Config)) // Обновление существующей ссылки.
+	router.HandleFunc("DELETE /link/{id}", handler.Delete())                                     // Удаление ссылки.
+	router.HandleFunc("GET /link/{hash}", handler.GoTo())                                        // Переход по сокращенной ссылке.
+	router.Handle("GET /link/", middleware.IsAuthenticated(handler.GetAll(), deps.Config))
 }
 
 // Create обрабатывает создание новой ссылки.
@@ -69,6 +77,10 @@ func (handler *LinkHendler) Create() http.HandlerFunc {
 // Update обрабатывает обновление существующей ссылки (пока пустая реализация).
 func (handler *LinkHendler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
+		if ok {
+			fmt.Println(email)
+		}
 		// Здесь реализация обновления ссылки.
 		body, err := reg.HandleBody[LinkUpdateRequest](&w, r)
 		if err != nil {
@@ -128,7 +140,6 @@ func (handler *LinkHendler) Delete() http.HandlerFunc {
 // GoTo обрабатывает переход по сокращенной ссылке
 func (handler *LinkHendler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Здесь будет реализация перехода по ссылке.
 		hash := r.PathValue("hash")
 
 		link, err := handler.LinkRepository.GetByHash(hash)
@@ -137,7 +148,35 @@ func (handler *LinkHendler) GoTo() http.HandlerFunc {
 			return
 		}
 
-		//перенаправляет юзера по Url
+		go handler.EventBus.Publish(event.Event{
+			Type: event.EventLinkVisited,
+			Data: link.ID,
+		})
+
 		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
+
+	}
+}
+
+func (handler *LinkHendler) GetAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+		if err != nil {
+			http.Error(w, "Invalid limit", http.StatusBadRequest)
+			return
+		}
+
+		offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil {
+			http.Error(w, "Invalid offset", http.StatusBadRequest)
+			return
+		}
+
+		links := handler.LinkRepository.GetAll(limit, offset)
+		count := handler.LinkRepository.Count()
+		res.Json(w, GetAllResponse{
+			Links: links,
+			Count: count},
+			http.StatusOK)
 	}
 }

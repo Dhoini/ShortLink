@@ -4,8 +4,10 @@ import (
 	"Lessons/configs"
 	"Lessons/internal/links"
 	"Lessons/internal/outh"
+	"Lessons/internal/stats"
 	"Lessons/internal/user"
 	"Lessons/pkg/db"
+	"Lessons/pkg/event"
 	"Lessons/pkg/middleware"
 	"fmt"
 	"net/http"
@@ -20,29 +22,35 @@ func main() {
 
 	// Создаем маршрутизатор для обработки HTTP-запросов.
 	router := http.NewServeMux()
+	eventBus := event.NewEventBus()
 
 	// Инициализация репозиториев.
 	LinkRepository := links.NewLinkRepository(dB)
 	UserRepository := user.NewUserRepository(dB)
-
+	StatRepository := stats.NewStatRepository(dB)
 	//Services
 	AuthService := auth.NewUserService(UserRepository)
-
+	statService := stats.NewStatService(&stats.StatServiceDeps{
+		EventBus:       eventBus,
+		StatRepository: StatRepository,
+	})
 	// Инициализация обработчиков для маршрутов аутентификации.
 	auth.NewAouthHendler(router, auth.AouthHendlerDeps{
 		Config:      conf, // Передаем конфигурацию в зависимости обработчика
 		AuthService: AuthService,
 	})
 
-	// Инициализация обработчиков для работы с сущностями Link.
+	// Инициализация обработчиков для работы с сущностям.
 	links.NewLinkHendler(router, links.LinkHendlerDeps{
 		LinkRepository: LinkRepository, // Передаем репозиторий ссылок в зависимости обработчика.
+		EventBus:       eventBus,
+		Config:         conf,
 	})
+
 	//middlwares
 	stackMiddlwares := middleware.Chain(
 		middleware.CORS,
 		middleware.Logging,
-		middleware.IsAuthenticated,
 	)
 	// Настраиваем сервер.
 	server := http.Server{
@@ -50,9 +58,13 @@ func main() {
 		Handler: stackMiddlwares(router), // Указываем маршрутизатор как обработчик.
 	}
 
+	go statService.AddClick()
 	// Выводим сообщение о запуске сервера.
 	fmt.Println("Listening on port 8080")
 
 	// Запускаем сервер и обрабатываем входящие запросы.
-	server.ListenAndServe()
+	err := server.ListenAndServe()
+	if err != nil {
+		return
+	}
 }

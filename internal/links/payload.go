@@ -14,3 +14,8 @@ type LinkUpdateRequest struct {
 type LinkDeleteRequest struct {
 	Id uint `json:"id"`
 }
+
+type GetAllResponse struct {
+	Links []Link `json:"links"`
+	Count int64  `json:"count"`
+}
