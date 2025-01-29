@@ -47,6 +47,11 @@ func main() {
 		Config:         conf,
 	})
 
+	stats.NewStatHendler(router, stats.StatHendlerDeps{
+		StatRepository: StatRepository,
+		Config:         conf,
+	})
+
 	//middlwares
 	stackMiddlwares := middleware.Chain(
 		middleware.CORS,
