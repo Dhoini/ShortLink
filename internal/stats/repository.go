@@ -3,6 +3,7 @@ package stats
 import (
 	"Lessons/pkg/db"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -35,13 +36,18 @@ func (repo *StatRepository) GroupStats(by string, from, to time.Time) []GetStatR
 	var SelectQuery string
 	switch by {
 	case GroupByDay:
-		SelectQuery = "to_char(date, 'YYYY-MM-DD') as period, sum(clicks) as clicks"
+		SelectQuery = "to_char(date, 'YYYY-MM-DD') as period, sum(clicks)"
 	case GroupByMonth:
-		SelectQuery = "to_char(date, 'YYYY-MM') as period, sum(clicks) as clicks"
+		SelectQuery = "to_char(date, 'YYYY-MM') as period, sum(clicks)"
 	}
 
-	repo.Database.Table("stats").
+	query := repo.Database.Table("stats").
 		Select(SelectQuery).
+		Session(&gorm.Session{})
+	if true {
+		query.Where("count>10")
+	}
+	query.
 		Where("date BETWEEN ? AND ?", from, to).
 		Group("period").
 		Order("period").

@@ -2,6 +2,7 @@ package links
 
 import (
 	"Lessons/pkg/db"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -81,10 +82,13 @@ func (repo *LinkRepository) Count() int64 {
 
 func (repo *LinkRepository) GetAll(limit, offset int) []Link {
 	var links []Link
-	repo.Database.
+	query := repo.Database.
 		Table("links").
 		Select("*").
 		Where("deleted_at IS NULL").
+		Session(&gorm.Session{})
+
+	query.
 		Order("id ").
 		Limit(int(limit)).
 		Offset(int(offset)).
