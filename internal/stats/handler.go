@@ -8,50 +8,61 @@ import (
 	"time"
 )
 
+// Константы для группировки статистики.
 const (
-	GroupByDay   = "day"
-	GroupByMonth = "month"
+	GroupByDay   = "day"   // Группировка по дням.
+	GroupByMonth = "month" // Группировка по месяцам.
 )
 
+// StatHendlerDeps определяет зависимости для обработчика статистики.
 type StatHendlerDeps struct {
-	StatRepository *StatRepository
-	Config         *configs.Config // Репозиторий для работы с сущностями Link.
+	StatRepository *StatRepository // Репозиторий для работы со статистикой.
+	Config         *configs.Config // Конфигурация приложения.
 }
 
-// LinkHendler отвечает за обработку HTTP-запросов, связанных с Link.
+// StatHandler отвечает за обработку HTTP-запросов, связанных со статистикой.
 type StatHandler struct {
-	StatRepository *StatRepository // Репозиторий для доступа к данным Link.
+	StatRepository *StatRepository // Репозиторий для доступа к данным статистики.
 }
 
-// NewLinkHendler создает новый LinkHendler и регистрирует маршруты.
-// router: маршрутизатор для обработки HTTP-запросов.
-// deps: зависимости для LinkHendler.
+// NewStatHendler создает новый обработчик статистики и регистрирует маршруты.
 func NewStatHendler(router *http.ServeMux, deps StatHendlerDeps) {
 	handler := &StatHandler{
-		StatRepository: deps.StatRepository,
+		StatRepository: deps.StatRepository, // Инициализация репозитория статистики.
 	}
-	// Регистрация маршрутов. 	// Переход по сокращенной ссылке.
-	router.Handle("GET /stat", middleware.IsAuthenticated(handler.GetStat(), deps.Config))
+
+	// Регистрация маршрутов.
+	router.Handle("GET /stat", middleware.IsAuthenticated(handler.GetStat(), deps.Config)) // Маршрут для получения статистики (требует аутентификации).
 }
+
+// GetStat обрабатывает запросы на получение статистики.
 func (h *StatHandler) GetStat() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Получаем параметр "from" из URL и преобразуем его в объект time.Time.
 		from, err := time.Parse("2006-01-02", r.URL.Query().Get("from"))
 		if err != nil {
-			http.Error(w, "Invalid param :from:", http.StatusBadRequest)
+			http.Error(w, "Invalid param :from:", http.StatusBadRequest) // Возвращаем 400, если параметр некорректен.
 			return
 		}
 
+		// Получаем параметр "to" из URL и преобразуем его в объект time.Time.
 		to, err := time.Parse("2006-01-02", r.URL.Query().Get("to"))
 		if err != nil {
-			http.Error(w, "invalid param :to:", http.StatusBadRequest)
+			http.Error(w, "Invalid param :to:", http.StatusBadRequest) // Возвращаем 400, если параметр некорректен.
 			return
 		}
+
+		// Получаем параметр "by" из URL для определения типа группировки.
 		by := r.URL.Query().Get("by")
 		if by != GroupByDay && by != GroupByMonth {
-			http.Error(w, "Invalid param :by:", http.StatusBadRequest)
+			http.Error(w, "Invalid param :by:", http.StatusBadRequest) // Возвращаем 400, если параметр некорректен.
 			return
 		}
+
+		// Получаем статистику из репозитория с учетом параметров группировки.
 		stats := h.StatRepository.GroupStats(by, from, to)
+
+		// Возвращаем статистику в формате JSON.
 		res.Json(w, stats, http.StatusOK)
 	}
 }
