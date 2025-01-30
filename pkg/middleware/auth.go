@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"Lessons/configs"
-	"Lessons/pkg/JWT"
+	"Lessons/pkg/Jwt"
 	"context"
 	"net/http"
 	"strings"
@@ -16,7 +16,10 @@ const (
 
 func writeUnauthorized(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
-	w.Write([]byte(http.StatusText(http.StatusUnauthorized)))
+	_, err := w.Write([]byte(http.StatusText(http.StatusUnauthorized)))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func IsAuthenticated(next http.Handler, config *configs.Config) http.Handler {
@@ -27,7 +30,7 @@ func IsAuthenticated(next http.Handler, config *configs.Config) http.Handler {
 			return
 		}
 		token := strings.TrimPrefix(authedHeader, "Bearer ")
-		isValid, data := JWT.NewJWT(config.Auth.Secret).Parse(token)
+		isValid, data := Jwt.NewJWT(config.Auth.Secret).Parse(token)
 		if !isValid {
 			writeUnauthorized(w)
 			return

@@ -34,7 +34,7 @@ func NewLinkHendler(router *http.ServeMux, deps LinkHendlerDeps) {
 		EventBus:       deps.EventBus,
 	}
 	// Регистрация маршрутов.
-	router.HandleFunc("POST /link", handler.Create())                                            // Создание новой ссылки.
+	router.Handle("POST /link", middleware.IsAuthenticated(handler.Create(), deps.Config))       // Создание новой ссылки.
 	router.Handle("PATCH /link/{id}", middleware.IsAuthenticated(handler.Update(), deps.Config)) // Обновление существующей ссылки.
 	router.HandleFunc("DELETE /link/{id}", handler.Delete())                                     // Удаление ссылки.
 	router.HandleFunc("GET /link/{hash}", handler.GoTo())                                        // Переход по сокращенной ссылке.

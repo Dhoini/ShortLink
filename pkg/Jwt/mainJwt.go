@@ -1,24 +1,24 @@
-package JWT
+package Jwt
 
 import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type JWTDate struct {
+type JwtDate struct {
 	Email string
 }
 
-type JWT struct {
+type JwtSecret struct {
 	Secret string
 }
 
-func NewJWT(secret string) *JWT {
-	return &JWT{
+func NewJWT(secret string) *JwtSecret {
+	return &JwtSecret{
 		Secret: secret,
 	}
 }
 
-func (j *JWT) Create(date JWTDate) (string, error) {
+func (j *JwtSecret) Create(date JwtDate) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": date.Email,
 	})
@@ -29,7 +29,7 @@ func (j *JWT) Create(date JWTDate) (string, error) {
 	return s, nil
 }
 
-func (j *JWT) Parse(token string) (bool, *JWTDate) {
+func (j *JwtSecret) Parse(token string) (bool, *JwtDate) {
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.Secret), nil
 	})
@@ -37,7 +37,7 @@ func (j *JWT) Parse(token string) (bool, *JWTDate) {
 		return false, nil
 	}
 	email := t.Claims.(jwt.MapClaims)["email"].(string)
-	return t.Valid, &JWTDate{
+	return t.Valid, &JwtDate{
 		Email: email,
 	}
 }

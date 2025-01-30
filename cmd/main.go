@@ -63,11 +63,11 @@ func App() http.Handler {
 }
 
 func main() {
-	app := App()
+	App := App()
 	// Настраиваем сервер.
 	server := http.Server{
 		Addr:    ":8080", // Порт, на котором будет запущен сервер.
-		Handler: app,     // Указываем маршрутизатор как обработчик.
+		Handler: App,     // Указываем маршрутизатор как обработчик.
 	}
 	// Выводим сообщение о запуске сервера.
 	fmt.Println("Listening on port 8080")

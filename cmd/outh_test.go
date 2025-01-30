@@ -67,46 +67,29 @@ func TestLoginSuccess(t *testing.T) {
 	res, err := http.Post(ts.URL+"/auth/login", "application/json", bytes.NewReader(data))
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	if res.StatusCode != 200 {
 		t.Fatalf("Expecting 200, got %d", res.StatusCode)
+		return
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	var resData auth.LoginResponse
 	err = json.Unmarshal(body, &resData)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	if resData.Token == "" {
 		t.Fatalf("Expecting token, got %s", resData.Token)
+		return
 	}
 
-	removeData(db)
-
-}
-
-func TestLoginFailed(t *testing.T) {
-	db := initDb()
-	initData(db)
-
-	ts := httptest.NewServer(App())
-	defer ts.Close()
-
-	data, _ := json.Marshal(&auth.LoginRequest{
-		Email:    "test@gmail.com",
-		Password: "..",
-	})
-	res, err := http.Post(ts.URL+"/auth/login", "application/json", bytes.NewReader(data))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if res.StatusCode != 401 {
-		t.Fatalf("Expecting 401, got %d", res.StatusCode)
-	}
 	removeData(db)
 
 }

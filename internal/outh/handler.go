@@ -2,7 +2,7 @@ package auth
 
 import (
 	"Lessons/configs"
-	"Lessons/pkg/JWT"
+	"Lessons/pkg/Jwt"
 	"Lessons/pkg/reg"
 	"Lessons/pkg/res"
 	"net/http"
@@ -48,7 +48,7 @@ func (handler *AouthHendler) Login() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
-		token, err := JWT.NewJWT(handler.Config.Auth.Secret).Create(JWT.JWTDate{
+		token, err := Jwt.NewJWT(handler.Config.Auth.Secret).Create(Jwt.JwtDate{
 			Email: email,
 		})
 		if err != nil {
@@ -76,7 +76,7 @@ func (handler *AouthHendler) Register() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
-		token, err := JWT.NewJWT(handler.Config.Auth.Secret).Create(JWT.JWTDate{
+		token, err := Jwt.NewJWT(handler.Config.Auth.Secret).Create(Jwt.JwtDate{
 			Email: email,
 		})
 		if err != nil {
