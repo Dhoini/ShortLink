@@ -14,8 +14,8 @@ const (
 	GroupByMonth = "month" // Группировка по месяцам.
 )
 
-// StatHendlerDeps определяет зависимости для обработчика статистики.
-type StatHendlerDeps struct {
+// StatHandlerDeps определяет зависимости для обработчика статистики.
+type StatHandlerDeps struct {
 	StatRepository *StatRepository // Репозиторий для работы со статистикой.
 	Config         *configs.Config // Конфигурация приложения.
 }
@@ -25,8 +25,8 @@ type StatHandler struct {
 	StatRepository *StatRepository // Репозиторий для доступа к данным статистики.
 }
 
-// NewStatHendler создает новый обработчик статистики и регистрирует маршруты.
-func NewStatHendler(router *http.ServeMux, deps StatHendlerDeps) {
+// NewStatHandler создает новый обработчик статистики и регистрирует маршруты.
+func NewStatHandler(router *http.ServeMux, deps StatHandlerDeps) {
 	handler := &StatHandler{
 		StatRepository: deps.StatRepository, // Инициализация репозитория статистики.
 	}

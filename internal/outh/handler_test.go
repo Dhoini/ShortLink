@@ -15,7 +15,7 @@ import (
 )
 
 // bootstrap инициализирует тестовую среду, создавая обработчик аутентификации и мок базы данных.
-func bootstrap() (*AouthHendler, sqlmock.Sqlmock, error) {
+func bootstrap() (*AuthHandler, sqlmock.Sqlmock, error) {
 	// Создаем мок базы данных с помощью sqlmock.
 	database, mock, err := sqlmock.New()
 	if err != nil {
@@ -36,7 +36,7 @@ func bootstrap() (*AouthHendler, sqlmock.Sqlmock, error) {
 	})
 
 	// Инициализируем обработчик аутентификации.
-	handler := AouthHendler{
+	handler := AuthHandler{
 		Config: &configs.Config{
 			Auth: configs.AuthConfig{
 				Secret: "secret", // Устанавливаем секретный ключ для JWT.

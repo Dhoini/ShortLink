@@ -12,22 +12,22 @@ import (
 	"strconv"
 )
 
-// LinkHendlerDeps определяет зависимости для LinkHendler.
-type LinkHendlerDeps struct {
+// LinkHandlerDeps определяет зависимости для LinkHandler.
+type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository // Репозиторий для работы с сущностями Link.
 	EventBus       *event.EventBus // Шина событий для обработки событий, связанных с ссылками.
 	Config         *configs.Config // Конфигурация приложения.
 }
 
-// LinkHendler отвечает за обработку HTTP-запросов, связанных с Link.
-type LinkHendler struct {
+// LinkHandler отвечает за обработку HTTP-запросов, связанных с Link.
+type LinkHandler struct {
 	LinkRepository *LinkRepository // Репозиторий для доступа к данным Link.
 	EventBus       *event.EventBus // Шина событий для публикации событий.
 }
 
-// NewLinkHendler создает новый LinkHendler и регистрирует маршруты.
-func NewLinkHendler(router *http.ServeMux, deps LinkHendlerDeps) {
-	handler := &LinkHendler{
+// NewLinkHandler создает новый LinkHandler и регистрирует маршруты.
+func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
+	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
 		EventBus:       deps.EventBus,
 	}
@@ -41,7 +41,7 @@ func NewLinkHendler(router *http.ServeMux, deps LinkHendlerDeps) {
 }
 
 // Create обрабатывает создание новой ссылки.
-func (handler *LinkHendler) Create() http.HandlerFunc {
+func (handler *LinkHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Извлекаем тело запроса и преобразуем в структуру LinkCreateRequest.
 		body, err := reg.HandleBody[LinkCreateRequest](&w, r)
@@ -73,7 +73,7 @@ func (handler *LinkHendler) Create() http.HandlerFunc {
 }
 
 // Update обрабатывает обновление существующей ссылки.
-func (handler *LinkHendler) Update() http.HandlerFunc {
+func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
 		if ok {
@@ -111,7 +111,7 @@ func (handler *LinkHendler) Update() http.HandlerFunc {
 }
 
 // Delete обрабатывает удаление ссылки по ID.
-func (handler *LinkHendler) Delete() http.HandlerFunc {
+func (handler *LinkHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Получаем значение параметра {id} из URL.
 		idString := r.PathValue("id")
@@ -141,7 +141,7 @@ func (handler *LinkHendler) Delete() http.HandlerFunc {
 }
 
 // GoTo обрабатывает переход по сокращенной ссылке.
-func (handler *LinkHendler) GoTo() http.HandlerFunc {
+func (handler *LinkHandler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := r.PathValue("hash") // Получаем хеш из URL.
 
@@ -164,7 +164,7 @@ func (handler *LinkHendler) GoTo() http.HandlerFunc {
 }
 
 // GetAll возвращает список всех ссылок с пагинацией.
-func (handler *LinkHendler) GetAll() http.HandlerFunc {
+func (handler *LinkHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Получаем параметр limit из запроса.
 		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))

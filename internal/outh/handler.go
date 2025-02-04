@@ -8,21 +8,21 @@ import (
 	"net/http"
 )
 
-// AouthHendlerDeps определяет зависимости для обработчика авторизации.
-type AouthHendlerDeps struct {
+// AuthHandlerDeps определяет зависимости для обработчика авторизации.
+type AuthHandlerDeps struct {
 	*configs.Config // Конфигурация приложения (например, секретный ключ для JWT).
 	*AuthService    // Сервис для работы с аутентификацией и регистрацией пользователей.
 }
 
-// AouthHendler реализует методы для обработки запросов авторизации.
-type AouthHendler struct {
+// AuthHandler реализует методы для обработки запросов авторизации.
+type AuthHandler struct {
 	*configs.Config // Конфигурация приложения.
 	*AuthService    // Сервис для работы с аутентификацией и регистрацией.
 }
 
-// NewAouthHendler регистрирует маршруты для авторизации.
-func NewAouthHendler(router *http.ServeMux, deps AouthHendlerDeps) {
-	handler := &AouthHendler{
+// NewAuthHandler регистрирует маршруты для авторизации.
+func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
+	handler := &AuthHandler{
 		Config:      deps.Config,      // Инициализация конфигурации.
 		AuthService: deps.AuthService, // Инициализация сервиса аутентификации.
 	}
@@ -33,7 +33,7 @@ func NewAouthHendler(router *http.ServeMux, deps AouthHendlerDeps) {
 }
 
 // Login обрабатывает запросы на вход пользователя.
-func (handler *AouthHendler) Login() http.HandlerFunc {
+func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Обрабатываем тело запроса и преобразуем в структуру LoginRequest.
 		body, err := reg.HandleBody[LoginRequest](&w, r)
@@ -66,7 +66,7 @@ func (handler *AouthHendler) Login() http.HandlerFunc {
 }
 
 // Register обрабатывает запросы на регистрацию пользователя.
-func (handler *AouthHendler) Register() http.HandlerFunc {
+func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Обрабатываем тело запроса и преобразуем в структуру RegisterRequest.
 		body, err := reg.HandleBody[RegisterRequest](&w, r)
