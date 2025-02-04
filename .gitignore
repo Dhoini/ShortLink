@@ -1,4 +1,4 @@
 /postgres-data
-/.env
+.env
 /cmd/.env
-/.idea
+.idea
