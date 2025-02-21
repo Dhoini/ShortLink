@@ -6,7 +6,6 @@ import (
 	"Lessons/pkg/middleware"
 	"Lessons/pkg/reg"
 	"Lessons/pkg/res"
-	"fmt"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
@@ -75,11 +74,6 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 // Update обрабатывает обновление существующей ссылки.
 func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
-		if ok {
-			fmt.Println(email) // Логируем email пользователя (если он есть в контексте).
-		}
-
 		// Извлекаем тело запроса и преобразуем в структуру LinkUpdateRequest.
 		body, err := reg.HandleBody[LinkUpdateRequest](&w, r)
 		if err != nil {
